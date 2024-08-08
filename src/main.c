@@ -1,8 +1,13 @@
 #include <stdio.h>
+#include <Windows.h>
 
 int main()
 {
-    printf("Hello World!");
+    SetConsoleCP(CP_UTF8);
+    SetConsoleOutputCP(CP_UTF8);
+
+    const char *str = "🎲🗝️⛏️🧱⚙️🔗💣";
+    printf_s(str);
     getchar();
     return 0;
 }
