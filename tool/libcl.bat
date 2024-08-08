@@ -1,7 +1,7 @@
 @echo off
 
 @REM 相対パスで移動
-cd %~dp0\..\src\
+cd %~dp0/../src
 
 @REM 対象ファイルをコンパイル
 cl /c /utf-8 GameConsole.c
@@ -18,7 +18,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 @REM ライブラリを移動
-move *.lib ..\out\ > nul
+move *.lib ../out/ > nul
 
 @REM 中間ファイルを削除
 del *.obj
