@@ -1,13 +1,14 @@
 #include <stdio.h>
-#include <Windows.h>
+
+#include "GameConsole.h"
 
 int main()
 {
-    SetConsoleCP(CP_UTF8);
-    SetConsoleOutputCP(CP_UTF8);
+    Initialize();
 
     const char *str = "🎲🗝️⛏️🧱⚙️🔗💣";
     printf_s(str);
+
     getchar();
     return 0;
 }
