@@ -24,6 +24,8 @@ void Initialize()
         console_mode &= ~ENABLE_ECHO_INPUT;
         // Ctrl+Cなどのシグナルを無効にする
         console_mode &= ~ENABLE_PROCESSED_INPUT;
+        // コンソール上でのマウス操作を無効にする
+        console_mode &= ~ENABLE_QUICK_EDIT_MODE;
         SetConsoleMode(input_handle, console_mode);
     }
 }
