@@ -22,6 +22,8 @@ void Initialize()
         GetConsoleMode(input_handle, &console_mode);
         // 入力された文字を非表示にする
         console_mode &= ~ENABLE_ECHO_INPUT;
+        // Ctrl+Cなどのシグナルを無効にする
+        console_mode &= ~ENABLE_PROCESSED_INPUT;
         SetConsoleMode(input_handle, console_mode);
     }
 }
