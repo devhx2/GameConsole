@@ -1,14 +1,11 @@
-#include <stdio.h>
-
 #include "GameConsole.h"
 
-int main()
-{
-    Initialize();
+int main() {
+  Initialize();
 
-    const char *str = "🎲🗝️⛏️🧱⚙️🔗💣";
-    printf_s(str);
+  const char *str = "🎲🗝️⛏️🧱⚙️🔗💣";
 
-    getchar();
-    return 0;
+  Finalize();
+
+  return 0;
 }
