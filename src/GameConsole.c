@@ -8,6 +8,15 @@ HANDLE g_screen_buffer1;
 /// @brief スクリーンバッファ2
 HANDLE g_screen_buffer2;
 
+void print(const char *format, va_list args, ...) {
+  char buffer[256];
+
+  vsprintf_s(buffer, (size_t)(sizeof(buffer)), format, args);
+
+  DWORD written = strlen(buffer);
+  WriteConsoleA(g_screen_buffer1, buffer, written, &written, NULL);
+}
+
 /// @brief 初期化処理
 void Initialize() {
   g_screen_buffer1 = CreateConsoleScreenBuffer(
@@ -29,7 +38,8 @@ void Initialize() {
   }
 
   {
-    // 仮想コンソールモードをオン -> Debugはデフォルトでオンだが,Releaseはオフのためプログラムでオン
+    // 仮想コンソールモードをオン ->
+    // Debugはデフォルトでオンだが,Releaseはオフのためプログラムでオン
     DWORD console_mode;
     GetConsoleMode(g_screen_buffer1, &console_mode);
     console_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
@@ -38,7 +48,7 @@ void Initialize() {
     GetConsoleMode(g_screen_buffer2, &console_mode);
     console_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(g_screen_buffer2, console_mode);
-}
+  }
 
   SetConsoleActiveScreenBuffer(g_screen_buffer1);
 
@@ -52,15 +62,9 @@ void Finalize() {
   CloseHandle(g_screen_buffer2);
 }
 
-
 void Print(const char *format, ...) {
-  char buffer[256];
-
-  va_list va;
-  va_start(va, format);
-  vsprintf_s(buffer, (size_t)(sizeof(buffer)), format, va);
-  va_end(va);
-
-  DWORD written = strlen(buffer);
-  WriteConsoleA(g_screen_buffer1, buffer, written, &written, NULL);
+  va_list args;
+  va_start(args, format);
+  print(format, args);
+  va_end(args);
 }
