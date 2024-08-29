@@ -3,5 +3,5 @@
 
 void Initialize();
 void Finalize();
-
+void Print(const char *format, ...);
 #endif
