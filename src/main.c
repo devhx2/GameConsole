@@ -5,7 +5,7 @@ int main() {
   Initialize();
 
   const char *str = "🎲🗝️⛏️🧱⚙️🔗💣";
-  Print("\033[2J\033[%d;%dH%s", 1, 1, str);
+  Print(2, 1, "%s", str);
   Sleep(1000);
 
   Finalize();

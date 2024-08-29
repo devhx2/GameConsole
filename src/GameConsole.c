@@ -1,14 +1,15 @@
+
 #include "GameConsole.h"
 
-#include <Windows.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <windows.h>
 
-/// @brief スクリーンバッファ1
-HANDLE g_screen_buffer1;
-/// @brief スクリーンバッファ2
-HANDLE g_screen_buffer2;
+HANDLE g_screen_buffer1;  // スクリーンバッファ1
+HANDLE g_screen_buffer2;  // スクリーンバッファ2
 
-void print(const char *format, va_list args, ...) {
+void print(const char *format, va_list args) {
   char buffer[256];
 
   vsprintf_s(buffer, (size_t)(sizeof(buffer)), format, args);
@@ -17,7 +18,17 @@ void print(const char *format, va_list args, ...) {
   WriteConsoleA(g_screen_buffer1, buffer, written, &written, NULL);
 }
 
-/// @brief 初期化処理
+void sprint(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  print(format, args);
+  va_end(args);
+}
+
+/******************************************************************************
+ * @brief ライブラリの初期化処理
+ * 
+ ******************************************************************************/
 void Initialize() {
   g_screen_buffer1 = CreateConsoleScreenBuffer(
       GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
@@ -56,15 +67,19 @@ void Initialize() {
   SetConsoleOutputCP(CP_UTF8);
 }
 
-/// @brief 終了処理
+/******************************************************************************
+ * @brief ライブラリの終了処理
+ * 
+ ******************************************************************************/
 void Finalize() {
   CloseHandle(g_screen_buffer1);
   CloseHandle(g_screen_buffer2);
 }
 
-void Print(const char *format, ...) {
+void Print(int x, int y, const char *format, ...) {
   va_list args;
   va_start(args, format);
+  sprint("\033[%d;%dH", y + 1, x + 1);
   print(format, args);
   va_end(args);
 }
