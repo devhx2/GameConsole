@@ -1,13 +1,15 @@
 
 #include "GameConsole.h"
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <vadefs.h>
 #include <windows.h>
 
-HANDLE g_screen_buffer1;  // スクリーンバッファ1
-HANDLE g_screen_buffer2;  // スクリーンバッファ2
+HANDLE g_screen_buffer1;     /* スクリーンバッファ1 */
+HANDLE g_screen_buffer2;     /* スクリーンバッファ2 */
+const char *ESCAPE = "\033"; /* エスケープシーケンス */
 
 void print(const char *format, va_list args) {
   char buffer[256];
@@ -27,7 +29,7 @@ void sprint(const char *format, ...) {
 
 /******************************************************************************
  * @brief ライブラリの初期化処理
- * 
+ *
  ******************************************************************************/
 void Initialize() {
   g_screen_buffer1 = CreateConsoleScreenBuffer(
@@ -69,7 +71,7 @@ void Initialize() {
 
 /******************************************************************************
  * @brief ライブラリの終了処理
- * 
+ *
  ******************************************************************************/
 void Finalize() {
   CloseHandle(g_screen_buffer1);
@@ -79,7 +81,7 @@ void Finalize() {
 void Print(int x, int y, const char *format, ...) {
   va_list args;
   va_start(args, format);
-  sprint("\033[%d;%dH", y + 1, x + 1);
+  sprint("%s[%d;%dH", ESCAPE, y + 1, x + 1);
   print(format, args);
   va_end(args);
 }
