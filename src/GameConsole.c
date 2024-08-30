@@ -10,22 +10,6 @@ HANDLE Screen1;              /* スクリーンバッファ1 */
 HANDLE Screen2;              /* スクリーンバッファ2 */
 const char *ESCAPE = "\033"; /* エスケープシーケンス */
 
-void print(const char *format, va_list args) {
-  char buffer[256];
-
-  vsprintf_s(buffer, (size_t)(sizeof(buffer)), format, args);
-
-  DWORD written = strlen(buffer);
-  WriteConsoleA(Screen1, buffer, written, &written, NULL);
-}
-
-void sprint(const char *format, ...) {
-  va_list args;
-  va_start(args, format);
-  print(format, args);
-  va_end(args);
-}
-
 /******************************************************************************
  * @brief ライブラリの初期化処理
  *
@@ -51,16 +35,13 @@ void Initialize() {
     // 仮想コンソールモードをオン ->
     // Debugはデフォルトでオンだが,Releaseはオフのためプログラムでオン
     DWORD console_mode;
-    GetConsoleMode(Screen1, &console_mode);
+    const HANDLE output_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleMode(output_handle, &console_mode);
     console_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(Screen1, console_mode);
-
-    GetConsoleMode(Screen2, &console_mode);
-    console_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(Screen2, console_mode);
+    SetConsoleMode(output_handle, console_mode);
   }
 
-  SetConsoleActiveScreenBuffer(Screen1);
+  SetStdHandle(STD_OUTPUT_HANDLE, Screen1);
 
   SetConsoleCP(CP_UTF8);
   SetConsoleOutputCP(CP_UTF8);
@@ -78,7 +59,7 @@ void Finalize() {
 void Print(int x, int y, const char *format, ...) {
   va_list args;
   va_start(args, format);
-  sprint("%s[%d;%dH", ESCAPE, y + 1, x + 1);
-  print(format, args);
+  printf_s("%s[%d;%dH", ESCAPE, y + 1, x + 1);
+  vprintf_s(format, args);
   va_end(args);
 }
