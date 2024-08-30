@@ -1,4 +1,3 @@
-
 #include "GameConsole.h"
 
 #include <stdarg.h>
@@ -7,8 +6,8 @@
 #include <vadefs.h>
 #include <windows.h>
 
-HANDLE g_screen_buffer1;     /* スクリーンバッファ1 */
-HANDLE g_screen_buffer2;     /* スクリーンバッファ2 */
+HANDLE Screen1;              /* スクリーンバッファ1 */
+HANDLE Screen2;              /* スクリーンバッファ2 */
 const char *ESCAPE = "\033"; /* エスケープシーケンス */
 
 void print(const char *format, va_list args) {
@@ -17,7 +16,7 @@ void print(const char *format, va_list args) {
   vsprintf_s(buffer, (size_t)(sizeof(buffer)), format, args);
 
   DWORD written = strlen(buffer);
-  WriteConsoleA(g_screen_buffer1, buffer, written, &written, NULL);
+  WriteConsoleA(Screen1, buffer, written, &written, NULL);
 }
 
 void sprint(const char *format, ...) {
@@ -32,10 +31,8 @@ void sprint(const char *format, ...) {
  *
  ******************************************************************************/
 void Initialize() {
-  g_screen_buffer1 = CreateConsoleScreenBuffer(
-      GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-  g_screen_buffer2 = CreateConsoleScreenBuffer(
-      GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+  Screen1 = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+  Screen2 = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
   {
     DWORD console_mode;
@@ -54,16 +51,16 @@ void Initialize() {
     // 仮想コンソールモードをオン ->
     // Debugはデフォルトでオンだが,Releaseはオフのためプログラムでオン
     DWORD console_mode;
-    GetConsoleMode(g_screen_buffer1, &console_mode);
+    GetConsoleMode(Screen1, &console_mode);
     console_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(g_screen_buffer1, console_mode);
+    SetConsoleMode(Screen1, console_mode);
 
-    GetConsoleMode(g_screen_buffer2, &console_mode);
+    GetConsoleMode(Screen2, &console_mode);
     console_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(g_screen_buffer2, console_mode);
+    SetConsoleMode(Screen2, console_mode);
   }
 
-  SetConsoleActiveScreenBuffer(g_screen_buffer1);
+  SetConsoleActiveScreenBuffer(Screen1);
 
   SetConsoleCP(CP_UTF8);
   SetConsoleOutputCP(CP_UTF8);
@@ -74,8 +71,8 @@ void Initialize() {
  *
  ******************************************************************************/
 void Finalize() {
-  CloseHandle(g_screen_buffer1);
-  CloseHandle(g_screen_buffer2);
+  CloseHandle(Screen1);
+  CloseHandle(Screen2);
 }
 
 void Print(int x, int y, const char *format, ...) {
