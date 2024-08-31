@@ -6,13 +6,18 @@
 #include <vadefs.h>
 #include <windows.h>
 
-HANDLE Screen[2];            /* スクリーンバッファ */
-const char *ESCAPE = "\033"; /* エスケープシーケンス */
+///=============================================================================
+/// 内部変数
+///=============================================================================
 
-/******************************************************************************
- * @brief 入力バッファのモードを初期化
- *
- ******************************************************************************/
+HANDLE Screen[2];            // スクリーンバッファ
+const char *ESCAPE = "\033"; // エスケープシーケンス
+
+///=============================================================================
+/// 内部関数
+///=============================================================================
+
+/// @brief 入力バッファのモードを初期化
 void initInputMode() {
   DWORD mode;
   const HANDLE handle = GetStdHandle(STD_INPUT_HANDLE);
@@ -28,10 +33,7 @@ void initInputMode() {
   SetConsoleMode(handle, mode);
 }
 
-/******************************************************************************
- * @brief 出力バッファのモードを初期化
- *
- ******************************************************************************/
+/// @brief 出力バッファのモードを初期化
 void initOutputMode() {
   DWORD mode;
   const HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -43,10 +45,10 @@ void initOutputMode() {
   SetConsoleMode(handle, mode);
 }
 
-/******************************************************************************
- * @brief ライブラリの初期化
- *
- ******************************************************************************/
+///=============================================================================
+/// 外部関数
+///=============================================================================
+
 void Initialize() {
   Screen[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
   Screen[1] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
@@ -60,10 +62,6 @@ void Initialize() {
   SetConsoleOutputCP(CP_UTF8);
 }
 
-/******************************************************************************
- * @brief ライブラリの終了
- *
- ******************************************************************************/
 void Finalize() {
   CloseHandle(Screen[0]);
   CloseHandle(Screen[1]);
@@ -85,4 +83,7 @@ void Print(int x, int y, const char *format, ...) {
   va_end(args);
 }
 
-void Clear() { printf_s("%s[2J", ESCAPE); }
+void Clear() {
+  // 現在のスクリーンバッファをクリア
+  printf_s("%s[2J", ESCAPE);
+}
