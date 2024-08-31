@@ -11,35 +11,49 @@ HANDLE Screen2;              /* スクリーンバッファ2 */
 const char *ESCAPE = "\033"; /* エスケープシーケンス */
 
 /******************************************************************************
- * @brief ライブラリの初期化処理
+ * @brief 入力バッファのモードを初期化
+ *
+ ******************************************************************************/
+void initInputMode() {
+  DWORD mode;
+  const HANDLE handle = GetStdHandle(STD_INPUT_HANDLE);
+  GetConsoleMode(handle, &mode);
+
+  // 入力された文字を非表示にする
+  mode &= ~ENABLE_ECHO_INPUT;
+  // Ctrl+Cなどのシグナルを無効にする
+  mode &= ~ENABLE_PROCESSED_INPUT;
+  // コンソール上でのマウス操作を無効にする
+  mode &= ~ENABLE_QUICK_EDIT_MODE;
+
+  SetConsoleMode(handle, mode);
+}
+
+/******************************************************************************
+ * @brief 出力バッファのモードを初期化
+ *
+ ******************************************************************************/
+void initOutputMode() {
+  DWORD mode;
+  const HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+  GetConsoleMode(handle, &mode);
+
+  // 仮想コンソールモードを有効にする
+  mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+  SetConsoleMode(handle, mode);
+}
+
+/******************************************************************************
+ * @brief ライブラリの初期化
  *
  ******************************************************************************/
 void Initialize() {
   Screen1 = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
   Screen2 = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
-  {
-    DWORD console_mode;
-    const HANDLE input_handle = GetStdHandle(STD_INPUT_HANDLE);
-    GetConsoleMode(input_handle, &console_mode);
-    // 入力された文字を非表示にする
-    console_mode &= ~ENABLE_ECHO_INPUT;
-    // Ctrl+Cなどのシグナルを無効にする
-    console_mode &= ~ENABLE_PROCESSED_INPUT;
-    // コンソール上でのマウス操作を無効にする
-    console_mode &= ~ENABLE_QUICK_EDIT_MODE;
-    SetConsoleMode(input_handle, console_mode);
-  }
-
-  {
-    // 仮想コンソールモードをオン ->
-    // Debugはデフォルトでオンだが,Releaseはオフのためプログラムでオン
-    DWORD console_mode;
-    const HANDLE output_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    GetConsoleMode(output_handle, &console_mode);
-    console_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(output_handle, console_mode);
-  }
+  initInputMode();
+  initOutputMode();
 
   SetStdHandle(STD_OUTPUT_HANDLE, Screen1);
 
@@ -48,7 +62,7 @@ void Initialize() {
 }
 
 /******************************************************************************
- * @brief ライブラリの終了処理
+ * @brief ライブラリの終了
  *
  ******************************************************************************/
 void Finalize() {
