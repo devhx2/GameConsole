@@ -5,8 +5,12 @@ int main() {
   Initialize();
 
   const char *str = "🎲🗝️⛏️🧱⚙️🔗💣";
-  Print(2, 1, "%s", str);
-  Sleep(1000);
+  for (int i = 0; i < 100; i++) {
+    Clear();
+    Print(i, 1, "%s", str);
+    Flip();
+    Sleep(16);
+  }
 
   Finalize();
 

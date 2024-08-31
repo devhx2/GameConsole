@@ -6,8 +6,7 @@
 #include <vadefs.h>
 #include <windows.h>
 
-HANDLE Screen1;              /* スクリーンバッファ1 */
-HANDLE Screen2;              /* スクリーンバッファ2 */
+HANDLE Screen[2];            /* スクリーンバッファ */
 const char *ESCAPE = "\033"; /* エスケープシーケンス */
 
 /******************************************************************************
@@ -49,13 +48,13 @@ void initOutputMode() {
  *
  ******************************************************************************/
 void Initialize() {
-  Screen1 = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-  Screen2 = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+  Screen[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+  Screen[1] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
   initInputMode();
   initOutputMode();
 
-  SetStdHandle(STD_OUTPUT_HANDLE, Screen1);
+  Flip();
 
   SetConsoleCP(CP_UTF8);
   SetConsoleOutputCP(CP_UTF8);
@@ -66,8 +65,16 @@ void Initialize() {
  *
  ******************************************************************************/
 void Finalize() {
-  CloseHandle(Screen1);
-  CloseHandle(Screen2);
+  CloseHandle(Screen[0]);
+  CloseHandle(Screen[1]);
+}
+
+void Flip() {
+  static int flag = 0;
+  SetStdHandle(STD_OUTPUT_HANDLE, Screen[flag]);
+
+  // 1,0を順に繰り返す
+  flag = (flag + 1) % 2;
 }
 
 void Print(int x, int y, const char *format, ...) {
@@ -77,3 +84,5 @@ void Print(int x, int y, const char *format, ...) {
   vprintf_s(format, args);
   va_end(args);
 }
+
+void Clear() { printf_s("%s[2J", ESCAPE); }
