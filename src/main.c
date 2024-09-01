@@ -6,10 +6,9 @@ int main() {
 
   const char *str = "🎲🗝️⛏️🧱⚙️🔗💣";
   for (int i = 0; i < 100; i++) {
-    Clear();
     Print(i, 1, "%s", str);
+    Sleep(33);
     Flip();
-    Sleep(16);
   }
 
   Finalize();
