@@ -67,8 +67,14 @@ void printBuffer(HANDLE handle, const char *format, ...) {
   va_end(args);
 }
 
+void moveCursor(HANDLE handle, int x, int y) {
+  // 引数は原点が(0,0)の座標系だが,ANSIエスケープシーケンスの原点が(1,1)の座標系
+  // ANSIの仕様に合わせるために各座標に+1
+  printBuffer(handle, "%s[%d;%dH", ESCAPE, y + 1, x + 1);
+}
+
 void clearBuffer(HANDLE handle) {
-  printBuffer(handle, "%s[%d;%dH", ESCAPE, 1, 1);
+  moveCursor(handle, 0, 0);
   printBuffer(handle, "%s[2J", ESCAPE);
 }
 
@@ -108,7 +114,7 @@ void Flip() {
 void Print(int x, int y, const char *format, ...) {
   va_list args;
   va_start(args, format);
-  printBuffer(Screen.Back, "%s[%d;%dH", ESCAPE, y + 1, x + 1);
+  moveCursor(Screen.Back, x, y);
   vprintBuffer(Screen.Back, format, args);
   va_end(args);
 }
