@@ -11,8 +11,8 @@
 ///=============================================================================
 
 struct Buffer {
-  HANDLE Front; // 表のバッファ
-  HANDLE Back;  // 表のバッファ
+  HANDLE Front; // 表のスクリーンバッファ
+  HANDLE Back;  // 裏のスクリーンバッファ
 } Screen;
 
 const char *ESCAPE = "\033"; // エスケープシーケンス
@@ -67,6 +67,11 @@ void printBuffer(HANDLE handle, const char *format, ...) {
   va_end(args);
 }
 
+void clearBuffer(HANDLE handle) {
+  printBuffer(handle, "%s[%d;%dH", ESCAPE, 1, 1);
+  printBuffer(handle, "%s[2J", ESCAPE);
+}
+
 ///=============================================================================
 /// 外部関数
 ///=============================================================================
@@ -93,8 +98,7 @@ void Flip() {
   SetConsoleActiveScreenBuffer(Screen.Back);
 
   // 古いスクリーンバッファをクリア
-  printBuffer(Screen.Front, "%s[%d;%dH", ESCAPE, 1, 1);
-  printBuffer(Screen.Front, "%s[2J", ESCAPE);
+  clearBuffer(Screen.Front);
 
   HANDLE tmp = Screen.Front;
   Screen.Front = Screen.Back;
@@ -109,8 +113,4 @@ void Print(int x, int y, const char *format, ...) {
   va_end(args);
 }
 
-void Clear() {
-  // 現在のスクリーンバッファをクリア
-  printBuffer(Screen.Back, "%s[%d;%dH", ESCAPE, 1, 1);
-  printBuffer(Screen.Back, "%s[2J", ESCAPE);
-}
+void Clear() { clearBuffer(Screen.Back); }
