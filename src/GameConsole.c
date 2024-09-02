@@ -10,8 +10,11 @@
 /// 内部変数
 ///=============================================================================
 
-int Index = 0;               // スクリーン番号
-HANDLE Screen[2];            // スクリーンバッファ
+struct Buffer {
+  HANDLE Front; // 表のバッファ
+  HANDLE Back;  // 表のバッファ
+} Screen;
+
 const char *ESCAPE = "\033"; // エスケープシーケンス
 
 ///=============================================================================
@@ -36,30 +39,31 @@ void initInputMode() {
 
 /// @brief 出力バッファのモードを初期化
 void initOutputMode() {
-  DWORD mode;
-  for (int i = 0; i < 2; i++) {
-    GetConsoleMode(Screen[i], &mode);
+  DWORD mode1, mode2;
+  GetConsoleMode(Screen.Front, &mode1);
+  GetConsoleMode(Screen.Back, &mode2);
 
-    // 仮想コンソールモードを有効にする
-    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+  // 仮想コンソールモードを有効にする
+  mode1 |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+  mode2 |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 
-    SetConsoleMode(Screen[i], mode);
-  }
+  SetConsoleMode(Screen.Front, mode1);
+  SetConsoleMode(Screen.Back, mode2);
 }
 
-void vprintBuffer(const char *format, va_list args) {
+void vprintBuffer(HANDLE handle, const char *format, va_list args) {
   char buffer[256];
 
   vsprintf_s(buffer, (size_t)(sizeof(buffer)), format, args);
 
   DWORD length = strlen(buffer);
-  WriteConsoleA(Screen[Index], buffer, length, &length, NULL);
+  WriteConsoleA(handle, buffer, length, &length, NULL);
 }
 
-void printBuffer(const char *format, ...) {
+void printBuffer(HANDLE handle, const char *format, ...) {
   va_list args;
   va_start(args, format);
-  vprintBuffer(format, args);
+  vprintBuffer(handle, format, args);
   va_end(args);
 }
 
@@ -68,8 +72,8 @@ void printBuffer(const char *format, ...) {
 ///=============================================================================
 
 void Initialize() {
-  Screen[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-  Screen[1] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+  Screen.Front = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+  Screen.Back = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
   initInputMode();
   initOutputMode();
@@ -81,30 +85,32 @@ void Initialize() {
 }
 
 void Finalize() {
-  CloseHandle(Screen[0]);
-  CloseHandle(Screen[1]);
+  CloseHandle(Screen.Front);
+  CloseHandle(Screen.Back);
 }
 
 void Flip() {
-  SetConsoleActiveScreenBuffer(Screen[Index]);
+  SetConsoleActiveScreenBuffer(Screen.Back);
 
-  // 1,0を順に繰り返す
-  Index = (Index + 1) % 2;
+  // 古いスクリーンバッファをクリア
+  printBuffer(Screen.Front, "%s[%d;%dH", ESCAPE, 1, 1);
+  printBuffer(Screen.Front, "%s[2J", ESCAPE);
 
-  // 新しいスクリーンバッファをクリア
-  Clear();
+  HANDLE tmp = Screen.Front;
+  Screen.Front = Screen.Back;
+  Screen.Back = tmp;
 }
 
 void Print(int x, int y, const char *format, ...) {
   va_list args;
   va_start(args, format);
-  printBuffer("%s[%d;%dH", ESCAPE, y + 1, x + 1);
-  vprintBuffer(format, args);
+  printBuffer(Screen.Back, "%s[%d;%dH", ESCAPE, y + 1, x + 1);
+  vprintBuffer(Screen.Back, format, args);
   va_end(args);
 }
 
 void Clear() {
   // 現在のスクリーンバッファをクリア
-  printBuffer("%s[%d;%dH", ESCAPE, 1, 1);
-  printBuffer("%s[2J", ESCAPE);
+  printBuffer(Screen.Back, "%s[%d;%dH", ESCAPE, 1, 1);
+  printBuffer(Screen.Back, "%s[2J", ESCAPE);
 }
