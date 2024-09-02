@@ -17,6 +17,18 @@ void Flip();
 /// @param ... 可変長引数
 void Print(int x, int y, const char *format, ...);
 
+/// @brief 前景色を設定
+/// @param r 赤要素
+/// @param g 緑要素
+/// @param b 青要素
+void SetFgColor(int r, int g, int b);
+
+/// @brief 後景色を設定
+/// @param r 赤要素
+/// @param g 緑要素
+/// @param b 青要素
+void SetBgColor(int r, int g, int b);
+
 /// @brief スクリーンバッファをクリア
 void Clear();
 

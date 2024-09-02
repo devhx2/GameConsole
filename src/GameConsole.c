@@ -40,16 +40,14 @@ void initInputMode() {
 
 /// @brief 出力バッファのモードを初期化
 void initOutputMode() {
-  DWORD mode1, mode2;
-  GetConsoleMode(Screen.Front, &mode1);
-  GetConsoleMode(Screen.Back, &mode2);
+  DWORD mode;
+  GetConsoleMode(Screen.Front, &mode);
 
   // 仮想コンソールモードを有効にする
-  mode1 |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-  mode2 |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+  mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 
-  SetConsoleMode(Screen.Front, mode1);
-  SetConsoleMode(Screen.Back, mode2);
+  SetConsoleMode(Screen.Front, mode);
+  SetConsoleMode(Screen.Back, mode);
 }
 
 /// @brief スクリーンバッファに出力
@@ -90,6 +88,7 @@ void moveCursor(HANDLE handle, int x, int y) {
 /// @param handle スクリーンバッファのハンドル
 void clearBuffer(HANDLE handle) {
   moveCursor(handle, 0, 0);
+  printBuffer(handle, "%s[0m", ESCAPE);
   printBuffer(handle, "%s[2J", ESCAPE);
 }
 
@@ -116,13 +115,12 @@ void Finalize() {
 }
 
 void Flip() {
-  SetConsoleActiveScreenBuffer(Screen.Back);
-
-  clearBuffer(Screen.Front);
-
   HANDLE tmp = Screen.Front;
   Screen.Front = Screen.Back;
   Screen.Back = tmp;
+
+  SetConsoleActiveScreenBuffer(Screen.Front);
+  clearBuffer(Screen.Back);
 }
 
 void Print(int x, int y, const char *format, ...) {
@@ -132,5 +130,9 @@ void Print(int x, int y, const char *format, ...) {
   vprintBuffer(Screen.Back, format, args);
   va_end(args);
 }
+
+void SetFgColor(int r, int g, int b) { printBuffer(Screen.Back, "%s[38;2;%d;%d;%dm", ESCAPE, r, g, b); }
+
+void SetBgColor(int r, int g, int b) { printBuffer(Screen.Back, "%s[48;2;%d;%d;%dm", ESCAPE, r, g, b); }
 
 void Clear() { clearBuffer(Screen.Back); }
