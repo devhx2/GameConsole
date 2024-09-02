@@ -10,12 +10,13 @@
 /// 内部変数
 ///=============================================================================
 
-struct Buffer {
+/// @brief ダブルバッファ
+struct DoubleBuffer {
   HANDLE Front; // 表のスクリーンバッファ
   HANDLE Back;  // 裏のスクリーンバッファ
 } Screen;
 
-const char *ESCAPE = "\033"; // エスケープシーケンス
+const char *ESCAPE = "\x1b"; // エスケープシーケンス
 
 ///=============================================================================
 /// 内部関数
@@ -51,6 +52,10 @@ void initOutputMode() {
   SetConsoleMode(Screen.Back, mode2);
 }
 
+/// @brief スクリーンバッファに出力
+/// @param handle スクリーンバッファのハンドル
+/// @param format 書式文字列
+/// @param args 引数リスト
 void vprintBuffer(HANDLE handle, const char *format, va_list args) {
   char buffer[256];
 
@@ -60,6 +65,10 @@ void vprintBuffer(HANDLE handle, const char *format, va_list args) {
   WriteConsoleA(handle, buffer, length, &length, NULL);
 }
 
+/// @brief スクリーンバッファに書き込み
+/// @param handle スクリーンバッファのハンドル
+/// @param format 書式文字列
+/// @param ... 可変長引数
 void printBuffer(HANDLE handle, const char *format, ...) {
   va_list args;
   va_start(args, format);
@@ -67,12 +76,18 @@ void printBuffer(HANDLE handle, const char *format, ...) {
   va_end(args);
 }
 
+/// @brief カーソルを移動
+/// @param handle スクリーンバッファのハンドル
+/// @param x x座標
+/// @param y y座標
 void moveCursor(HANDLE handle, int x, int y) {
   // 引数は原点が(0,0)の座標系だが,ANSIエスケープシーケンスの原点が(1,1)の座標系
   // ANSIの仕様に合わせるために各座標に+1
   printBuffer(handle, "%s[%d;%dH", ESCAPE, y + 1, x + 1);
 }
 
+/// @brief スクリーンバッファをクリア
+/// @param handle スクリーンバッファのハンドル
 void clearBuffer(HANDLE handle) {
   moveCursor(handle, 0, 0);
   printBuffer(handle, "%s[2J", ESCAPE);
@@ -103,7 +118,6 @@ void Finalize() {
 void Flip() {
   SetConsoleActiveScreenBuffer(Screen.Back);
 
-  // 古いスクリーンバッファをクリア
   clearBuffer(Screen.Front);
 
   HANDLE tmp = Screen.Front;

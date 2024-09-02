@@ -14,7 +14,7 @@ void Flip();
 /// @param x x座標
 /// @param y y座標
 /// @param format 書式文字列
-/// @param  可変長引数
+/// @param ... 可変長引数
 void Print(int x, int y, const char *format, ...);
 
 /// @brief スクリーンバッファをクリア
